@@ -14,7 +14,6 @@ namespace KooliProjekt.Application.Data
         [MinLength(1)]
         public string FileName { get; set; }
 
-        [Required]
         [MaxLength(50)]
         [MinLength(1)]
         public string FilePath { get; set; }
