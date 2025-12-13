@@ -4,10 +4,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KooliProjekt.Application.Data
 {
-    public class Project
+    public class Project : Entity
     {
-        public int Id { get; set; }
-
         [Required]
         [MaxLength(50)]
         [MinLength(1)]

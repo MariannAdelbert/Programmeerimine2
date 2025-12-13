@@ -3,9 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KooliProjekt.Application.Data
 {
-    public class TaskFile
+    public class TaskFile : Entity
     {
-        public int Id { get; set; }
         public int TaskId { get; set; }
         public ProjectTask ProjectTask { get; set; }
 

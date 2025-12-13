@@ -1,41 +1,44 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+﻿using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Features.Projects
 {
     public class GetProjectQueryHandler : IRequestHandler<GetProjectQuery, OperationResult<object>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IProjectRepository _projectRepository;
 
-        public GetProjectQueryHandler(ApplicationDbContext dbContext)
+        public GetProjectQueryHandler(IProjectRepository projectRepository)
         {
-            _dbContext = dbContext;
+            _projectRepository = projectRepository;
         }
 
         public async Task<OperationResult<object>> Handle(GetProjectQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<object>();
 
-            result.Value = await _dbContext
-                .Projects
-                .Where(p => p.Id == request.Id)
-                .Select(p => new
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    StartDate = p.StartDate,
-                    Deadline = p.Deadline,
-                    Budget = p.Budget,
-                    HourlyRate = p.HourlyRate
-                })
-                .FirstOrDefaultAsync(cancellationToken);
+            var project = await _projectRepository.GetByIdAsync(request.Id);
+
+            if (project == null)
+            {
+                result.AddError("Projekt ei leitud.");
+                return result;
+            }
+
+            result.Value = new
+            {
+                Id = project.Id,
+                Name = project.Name,
+                StartDate = project.StartDate,
+                Deadline = project.Deadline,
+                Budget = project.Budget,
+                HourlyRate = project.HourlyRate
+            };
 
             return result;
         }
+
     }
 }

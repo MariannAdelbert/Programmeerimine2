@@ -4,9 +4,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KooliProjekt.Application.Data
 {
-    public class ProjectTask
+    public class ProjectTask : Entity
     {
-        public int Id { get; set; }
         public int ProjectId { get; set; }
 
         [Required]

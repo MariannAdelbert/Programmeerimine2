@@ -1,14 +1,14 @@
-﻿using KooliProjekt.Application.Features.Users;
+﻿using KooliProjekt.Application.Features.WorkLogs;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace KooliProjekt.WebAPI.Controllers
 {
-    public class UsersController : ApiControllerBase
+    public class WorkLogsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
-        public UsersController(IMediator mediator)
+        public WorkLogsController(IMediator mediator)
         {
             _mediator = mediator;
         }
@@ -16,14 +16,14 @@ namespace KooliProjekt.WebAPI.Controllers
         [HttpGet("Get")]
         public async Task<IActionResult> Get(int id)
         {
-            var query = new GetUserQuery { Id = id };
+            var query = new GetWorkLogQuery { Id = id };
             var response = await _mediator.Send(query);
 
             return Result(response);
         }
 
         [HttpPost("Save")]
-        public async Task<IActionResult> Save([FromBody] SaveUserCommand command)
+        public async Task<IActionResult> Save([FromBody] SaveWorkLogCommand command)
         {
             var response = await _mediator.Send(command);
 
@@ -31,7 +31,7 @@ namespace KooliProjekt.WebAPI.Controllers
         }
 
         [HttpDelete("Delete")]
-        public async Task<IActionResult> Delete(DeleteUserCommand command)
+        public async Task<IActionResult> Delete(DeleteWorkLogCommand command)
         {
             var response = await _mediator.Send(command);
 

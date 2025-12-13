@@ -13,11 +13,28 @@ namespace KooliProjekt.WebAPI.Controllers
             _mediator = mediator;
         }
 
-        [HttpDelete]
-        [Route("Delete")]
+        [HttpGet("Get")]
+        public async Task<IActionResult> Get(int id)
+        {
+            var query = new GetProjectTaskQuery { Id = id };
+            var response = await _mediator.Send(query);
+
+            return Result(response);
+        }
+
+        [HttpPost("Save")]
+        public async Task<IActionResult> Save([FromBody] SaveProjectTaskCommand command)
+        {
+            var response = await _mediator.Send(command);
+
+            return Result(response);
+        }
+
+        [HttpDelete("Delete")]
         public async Task<IActionResult> Delete(DeleteProjectTaskCommand command)
         {
             var response = await _mediator.Send(command);
+
             return Result(response);
         }
     }
