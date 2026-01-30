@@ -1,25 +1,33 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+﻿using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Features.Projects
 {
-    public class GetProjectQueryHandler : IRequestHandler<GetProjectQuery, OperationResult<object>>
+    public class GetProjectQueryHandler
+    : IRequestHandler<GetProjectQuery, OperationResult<object>>
     {
         private readonly ApplicationDbContext _dbContext;
 
         public GetProjectQueryHandler(ApplicationDbContext dbContext)
         {
-            _dbContext = dbContext;
+            _dbContext = dbContext
+                ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public async Task<OperationResult<object>> Handle(GetProjectQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<object>> Handle(
+            GetProjectQuery request,
+            CancellationToken cancellationToken)
         {
             var result = new OperationResult<object>();
+
+            if (request == null)
+                return result;
 
             result.Value = await _dbContext
                 .Projects
@@ -38,4 +46,5 @@ namespace KooliProjekt.Application.Features.Projects
             return result;
         }
     }
+
 }
