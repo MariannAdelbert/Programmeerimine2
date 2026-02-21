@@ -8,37 +8,36 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KooliProjekt.Application.Features.Projects
+namespace KooliProjekt.Application.Features.ProjectUsers
 {
-    public class ListProjectsQueryHandler : IRequestHandler<ListProjectsQuery, OperationResult<PagedResult<Project>>>
+    public class ListProjectUsersQueryHandler : IRequestHandler<ListProjectUsersQuery, OperationResult<PagedResult<ProjectUser>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public ListProjectsQueryHandler(ApplicationDbContext dbContext)
+        public ListProjectUsersQueryHandler(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public async Task<OperationResult<PagedResult<Project>>> Handle(ListProjectsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<ProjectUser>>> Handle(ListProjectUsersQuery request, CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var result = new OperationResult<PagedResult<Project>>();
+            var result = new OperationResult<PagedResult<ProjectUser>>();
 
-            // Kui page või pageSize on <= 0, tagastame null Value
             if (request.Page <= 0 || request.PageSize <= 0)
             {
                 result.Value = null;
                 return result;
             }
 
-            // Võtame andmed leheküljiti
-            var query = _dbContext.Projects.OrderBy(p => p.Name);
+            var query = _dbContext.ProjectUsers
+                .Include(pu => pu.User)
+                .Include(pu => pu.Project)
+                .OrderBy(pu => pu.RoleInProject);
 
-            // InMemory DB jaoks teeb ToListAsync enne PagedResult-i loomist
             var pagedResult = await query.GetPagedAsync(request.Page, request.PageSize);
-
             result.Value = pagedResult;
             return result;
         }

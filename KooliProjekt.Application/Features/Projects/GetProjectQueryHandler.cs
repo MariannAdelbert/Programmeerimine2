@@ -27,7 +27,7 @@ namespace KooliProjekt.Application.Features.Projects
             var result = new OperationResult<object>();
 
             if (request == null)
-                return result;
+                throw new ArgumentNullException(nameof(request));
 
             result.Value = await _dbContext
                 .Projects

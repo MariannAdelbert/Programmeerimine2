@@ -8,35 +8,35 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KooliProjekt.Application.Features.Projects
+namespace KooliProjekt.Application.Features.ProjectTasks
 {
-    public class ListProjectsQueryHandler : IRequestHandler<ListProjectsQuery, OperationResult<PagedResult<Project>>>
+    public class ListProjectTasksQueryHandler : IRequestHandler<ListProjectTasksQuery, OperationResult<PagedResult<ProjectTask>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
-        public ListProjectsQueryHandler(ApplicationDbContext dbContext)
+        public ListProjectTasksQueryHandler(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public async Task<OperationResult<PagedResult<Project>>> Handle(ListProjectsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<ProjectTask>>> Handle(ListProjectTasksQuery request, CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            var result = new OperationResult<PagedResult<Project>>();
+            var result = new OperationResult<PagedResult<ProjectTask>>();
 
-            // Kui page või pageSize on <= 0, tagastame null Value
             if (request.Page <= 0 || request.PageSize <= 0)
             {
                 result.Value = null;
                 return result;
             }
 
-            // Võtame andmed leheküljiti
-            var query = _dbContext.Projects.OrderBy(p => p.Name);
+            var query = _dbContext.ProjectTasks
+                                  .Where(pt => pt.ProjectId == request.ProjectId)
+                                  .OrderBy(pt => pt.Title);
 
-            // InMemory DB jaoks teeb ToListAsync enne PagedResult-i loomist
+            // InMemory DB jaoks ToListAsync enne PagedResult-i
             var pagedResult = await query.GetPagedAsync(request.Page, request.PageSize);
 
             result.Value = pagedResult;

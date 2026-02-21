@@ -1,8 +1,9 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+﻿using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Features.Projects
 {
@@ -12,11 +13,14 @@ namespace KooliProjekt.Application.Features.Projects
 
         public SaveProjectCommandHandler(ApplicationDbContext dbContext)
         {
-            _dbContext = dbContext;
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public async Task<OperationResult> Handle(SaveProjectCommand request, CancellationToken cancellationToken)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
             var result = new OperationResult();
 
             Project project;

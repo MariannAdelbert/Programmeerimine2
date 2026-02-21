@@ -5,6 +5,8 @@ namespace KooliProjekt.Application.Data
 {
     public class User
     {
+        public string UserName;
+
         public int Id { get; set; }
 
         [Required]

@@ -5,6 +5,7 @@ namespace KooliProjekt.Application.Features.ProjectUsers
 {
     public class DeleteProjectUserCommand : IRequest<OperationResult>
     {
-        public int Id { get; set; }
+        public int ProjectId { get; set; }
+        public int UserId { get; set; }
     }
 }
