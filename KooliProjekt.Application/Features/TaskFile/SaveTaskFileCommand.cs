@@ -1,9 +1,11 @@
-﻿using MediatR;
-using KooliProjekt.Application.Infrastructure.Results;
+﻿using KooliProjekt.Application.Infrastructure.Results;
+using MediatR;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace KooliProjekt.Application.Features.TaskFiles
 {
+    [ExcludeFromCodeCoverage]
     public class SaveTaskFileCommand : IRequest<OperationResult>
     {
         public int Id { get; set; }

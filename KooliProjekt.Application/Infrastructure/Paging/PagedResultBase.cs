@@ -1,5 +1,8 @@
-﻿namespace KooliProjekt.Application.Infrastructure.Paging
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace KooliProjekt.Application.Infrastructure.Paging
 {
+    [ExcludeFromCodeCoverage]
     public abstract class PagedResultBase
     {
         public int CurrentPage { get; set; }

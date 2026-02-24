@@ -242,5 +242,175 @@ namespace KooliProjekt.Application.UnitTests.Features.WorkLogs
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        // -------------------
+        // TASKID TEST
+        // -------------------
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-5)]
+        public async Task SaveWorkLogValidator_should_fail_when_task_id_is_invalid(int taskId)
+        {
+            // Arrange
+            var command = new SaveWorkLogCommand
+            {
+                TaskId = taskId,
+                UserId = 1,
+                Date = DateTime.Now,
+                HoursSpent = 8,
+                Description = "Valid description"
+            };
+            var validator = new SaveWorkLogCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveWorkLogCommand.TaskId), error.PropertyName);
+        }
+
+        // -------------------
+        // USERID TEST
+        // -------------------
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-3)]
+        public async Task SaveWorkLogValidator_should_fail_when_user_id_is_invalid(int userId)
+        {
+            // Arrange
+            var command = new SaveWorkLogCommand
+            {
+                TaskId = 1,
+                UserId = userId,
+                Date = DateTime.Now,
+                HoursSpent = 8,
+                Description = "Valid description"
+            };
+            var validator = new SaveWorkLogCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveWorkLogCommand.UserId), error.PropertyName);
+        }
+
+        // -------------------
+        // DATE TEST
+        // -------------------
+        [Fact]
+        public async Task SaveWorkLogValidator_should_fail_when_date_is_in_future()
+        {
+            // Arrange
+            var command = new SaveWorkLogCommand
+            {
+                TaskId = 1,
+                UserId = 1,
+                Date = DateTime.Now.AddDays(1), // tulevikus
+                HoursSpent = 8,
+                Description = "Valid description"
+            };
+            var validator = new SaveWorkLogCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveWorkLogCommand.Date), error.PropertyName);
+        }
+
+        // -------------------
+        // HOURS SPENT TEST
+        // -------------------
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        [InlineData(25)] // liiga palju
+        public async Task SaveWorkLogValidator_should_fail_when_hours_spent_is_invalid(decimal hours)
+        {
+            // Arrange
+            var command = new SaveWorkLogCommand
+            {
+                TaskId = 1,
+                UserId = 1,
+                Date = DateTime.Now,
+                HoursSpent = hours,
+                Description = "Valid description"
+            };
+            var validator = new SaveWorkLogCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveWorkLogCommand.HoursSpent), error.PropertyName);
+        }
+
+        // -------------------
+        // DESCRIPTION TEST
+        // -------------------
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vestibulum scelerisque quam at erat venenatis, a blandit turpis tincidunt.")] // >200 char
+        public async Task SaveWorkLogValidator_should_fail_when_description_is_invalid(string description)
+        {
+            // Arrange
+            var command = new SaveWorkLogCommand
+            {
+                TaskId = 1,
+                UserId = 1,
+                Date = DateTime.Now,
+                HoursSpent = 8,
+                Description = description
+            };
+            var validator = new SaveWorkLogCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveWorkLogCommand.Description), error.PropertyName);
+        }
+
+        // -------------------
+        // POSITIIVNE TEST
+        // -------------------
+        [Fact]
+        public async Task SaveWorkLogValidator_should_succeed_when_command_is_valid()
+        {
+            // Arrange
+            var command = new SaveWorkLogCommand
+            {
+                TaskId = 1,
+                UserId = 1,
+                Date = DateTime.Now,
+                HoursSpent = 8,
+                Description = "Valid description"
+            };
+            var validator = new SaveWorkLogCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
     }
 }

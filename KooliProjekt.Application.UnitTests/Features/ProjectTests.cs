@@ -289,5 +289,148 @@ namespace KooliProjekt.Application.UnitTests.Features.Projects
 
             Assert.True(true); // lihtsalt veenduda, et ei viska exceptionit
         }
+        // -------------------
+        // SAVE VALIDATOR TESTS
+        // -------------------
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("123456789012345678901234567890123456789012345678901")]
+        public async Task SaveValidator_should_fail_when_name_is_invalid(string name)
+        {
+            // Arrange
+            var command = CreateValidCommand();
+            command.Name = name;
+
+            var validator = new SaveProjectCommandValidator(DbContext);
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors,
+                e => e.PropertyName == nameof(SaveProjectCommand.Name));
+        }
+
+        [Fact]
+        public async Task SaveValidator_should_fail_when_project_name_already_exists()
+        {
+            // Arrange
+            DbContext.Projects.Add(new Project
+            {
+                Name = "Existing project"
+            });
+            await DbContext.SaveChangesAsync();
+
+            var command = CreateValidCommand();
+            command.Name = "Existing project";
+
+            var validator = new SaveProjectCommandValidator(DbContext);
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors,
+                e => e.PropertyName == nameof(SaveProjectCommand.Name));
+        }
+
+        [Fact]
+        public async Task SaveValidator_should_fail_when_deadline_is_before_startdate()
+        {
+            // Arrange
+            var command = CreateValidCommand();
+            command.StartDate = DateTime.Today;
+            command.Deadline = DateTime.Today.AddDays(-1);
+
+            var validator = new SaveProjectCommandValidator(DbContext);
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors,
+                e => e.PropertyName == nameof(SaveProjectCommand.Deadline));
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(-100)]
+        public async Task SaveValidator_should_fail_when_budget_is_negative(decimal budget)
+        {
+            // Arrange
+            var command = CreateValidCommand();
+            command.Budget = budget;
+
+            var validator = new SaveProjectCommandValidator(DbContext);
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors,
+                e => e.PropertyName == nameof(SaveProjectCommand.Budget));
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(-50)]
+        public async Task SaveValidator_should_fail_when_hourlyrate_is_negative(decimal hourlyRate)
+        {
+            // Arrange
+            var command = CreateValidCommand();
+            command.HourlyRate = hourlyRate;
+
+            var validator = new SaveProjectCommandValidator(DbContext);
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors,
+                e => e.PropertyName == nameof(SaveProjectCommand.HourlyRate));
+        }
+
+        [Fact]
+        public async Task SaveValidator_should_succeed_when_command_is_valid()
+        {
+            // Arrange
+            var command = CreateValidCommand();
+            var validator = new SaveProjectCommandValidator(DbContext);
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
+
+        // -------------------
+        // HELPER
+        // -------------------
+        private SaveProjectCommand CreateValidCommand()
+        {
+            return new SaveProjectCommand
+            {
+                Name = "Valid project",
+                StartDate = DateTime.Today,
+                Deadline = DateTime.Today.AddDays(10),
+                Budget = 1000,
+                HourlyRate = 50
+            };
+        }
+
     }
 }

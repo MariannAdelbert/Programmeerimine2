@@ -2,9 +2,11 @@
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace KooliProjekt.Application.Features.WorkLogs
 {
+    [ExcludeFromCodeCoverage]
     public class SaveWorkLogCommand : IRequest<OperationResult<WorkLogDto>>
     {
         public int? Id { get; set; }

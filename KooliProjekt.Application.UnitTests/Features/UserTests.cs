@@ -242,5 +242,150 @@ namespace KooliProjekt.Application.UnitTests.Features.Users
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        // -------------------
+        // USERNAME TEST
+        // -------------------
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("0123456789012345678901234567890123456789012345678901")] // 51 tähemärki
+        public async Task SaveUserValidator_should_fail_when_username_is_invalid(string userName)
+        {
+            // Arrange
+            var command = new SaveUserCommand
+            {
+                UserName = userName,
+                Name = "Valid Name",
+                Email = "valid@example.com",
+                Password = "Password123",
+                Role = "Admin"
+            };
+            var validator = new SaveUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveUserCommand.UserName), error.PropertyName);
+        }
+
+        // -------------------
+        // EMAIL TEST
+        // -------------------
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("not-an-email")]
+        public async Task SaveUserValidator_should_fail_when_email_is_invalid(string email)
+        {
+            // Arrange
+            var command = new SaveUserCommand
+            {
+                UserName = "ValidUser",
+                Name = "Valid Name",
+                Email = email,
+                Password = "Password123",
+                Role = "Admin"
+            };
+            var validator = new SaveUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveUserCommand.Email), error.PropertyName);
+        }
+
+        // -------------------
+        // PASSWORD TEST
+        // -------------------
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("12345")] // liiga lühike
+        public async Task SaveUserValidator_should_fail_when_password_is_invalid(string password)
+        {
+            // Arrange
+            var command = new SaveUserCommand
+            {
+                UserName = "ValidUser",
+                Name = "Valid Name",
+                Email = "valid@example.com",
+                Password = password,
+                Role = "Admin"
+            };
+            var validator = new SaveUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveUserCommand.Password), error.PropertyName);
+        }
+
+        // -------------------
+        // ROLE TEST
+        // -------------------
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("0123456789012345678901234567890123456789012345678901")] // 51 tähemärki
+        public async Task SaveUserValidator_should_fail_when_role_is_invalid(string role)
+        {
+            // Arrange
+            var command = new SaveUserCommand
+            {
+                UserName = "ValidUser",
+                Name = "Valid Name",
+                Email = "valid@example.com",
+                Password = "Password123",
+                Role = role
+            };
+            var validator = new SaveUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveUserCommand.Role), error.PropertyName);
+        }
+
+        // -------------------
+        // POSITIIVNE TEST
+        // -------------------
+        [Fact]
+        public async Task SaveUserValidator_should_succeed_when_command_is_valid()
+        {
+            // Arrange
+            var command = new SaveUserCommand
+            {
+                UserName = "ValidUser",
+                Name = "Valid Name",
+                Email = "valid@example.com",
+                Password = "Password123",
+                Role = "Admin"
+            };
+            var validator = new SaveUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
     }
 }

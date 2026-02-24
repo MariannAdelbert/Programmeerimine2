@@ -198,5 +198,141 @@ namespace KooliProjekt.Application.UnitTests.Features.TaskFiles
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        // -------------------
+        // TASKID TEST
+        // -------------------
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-5)]
+        public async Task SaveFileValidator_should_fail_when_task_id_is_invalid(int taskId)
+        {
+            // ------------------- Arrange -------------------
+            var command = new SaveTaskFileCommand
+            {
+                TaskId = taskId,
+                FileName = "validfile.txt",
+                FilePath = "/files/validfile.txt",
+                UploadDate = DateTime.Now
+            };
+            var validator = new SaveTaskFileCommandValidator();
+
+            // ------------------- Act -------------------
+            var result = await validator.ValidateAsync(command);
+
+            // ------------------- Assert -------------------
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveTaskFileCommand.TaskId), error.PropertyName);
+        }
+
+        // -------------------
+        // FILENAME TEST
+        // -------------------
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("01234567878945613290123456789012341235678901234567890123456789012345678901234567890123456789012345678901")] // 101 tähemärki
+        public async Task SaveFileValidator_should_fail_when_file_name_is_invalid(string fileName)
+        {
+            // ------------------- Arrange -------------------
+            var command = new SaveTaskFileCommand
+            {
+                TaskId = 1,
+                FileName = fileName,
+                FilePath = "/files/file.txt",
+                UploadDate = DateTime.Now
+            };
+            var validator = new SaveTaskFileCommandValidator();
+
+            // ------------------- Act -------------------
+            var result = await validator.ValidateAsync(command);
+
+            // ------------------- Assert -------------------
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveTaskFileCommand.FileName), error.PropertyName);
+        }
+
+        // -------------------
+        // FILEPATH TEST
+        // -------------------
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("C:/very/long/path/that/exceeds/the/allowed/limit/for/file/path/and/keeps/going/on/forever/still/going/on/hello/its/me/is/it/long/now/1234567890.txt")] // >200 char
+        public async Task SaveFileValidator_should_fail_when_file_path_is_invalid(string filePath)
+        {
+            // ------------------- Arrange -------------------
+            var command = new SaveTaskFileCommand
+            {
+                TaskId = 1,
+                FileName = "validfile.txt",
+                FilePath = filePath,
+                UploadDate = DateTime.Now
+            };
+            var validator = new SaveTaskFileCommandValidator();
+
+            // ------------------- Act -------------------
+            var result = await validator.ValidateAsync(command);
+
+            // ------------------- Assert -------------------
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveTaskFileCommand.FilePath), error.PropertyName);
+        }
+
+        // -------------------
+        // UPLOADDATE TEST
+        // -------------------
+        [Fact]
+        public async Task SaveFileValidator_should_fail_when_upload_date_in_future()
+        {
+            // ------------------- Arrange -------------------
+            var command = new SaveTaskFileCommand
+            {
+                TaskId = 1,
+                FileName = "validfile.txt",
+                FilePath = "/files/validfile.txt",
+                UploadDate = DateTime.Now.AddDays(1) // tulevikus
+            };
+            var validator = new SaveTaskFileCommandValidator();
+
+            // ------------------- Act -------------------
+            var result = await validator.ValidateAsync(command);
+
+            // ------------------- Assert -------------------
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveTaskFileCommand.UploadDate), error.PropertyName);
+        }
+
+        // -------------------
+        // POSITIIVNE TEST
+        // -------------------
+        [Fact]
+        public async Task SaveFileValidator_should_succeed_when_command_is_valid()
+        {
+            // ------------------- Arrange -------------------
+            var command = new SaveTaskFileCommand
+            {
+                TaskId = 1,
+                FileName = "validfile.txt",
+                FilePath = "/files/validfile.txt",
+                UploadDate = DateTime.Now
+            };
+            var validator = new SaveTaskFileCommandValidator();
+
+            // ------------------- Act -------------------
+            var result = await validator.ValidateAsync(command);
+
+            // ------------------- Assert -------------------
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
     }
 }

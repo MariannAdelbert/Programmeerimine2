@@ -1,5 +1,6 @@
 ﻿using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.ProjectTasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -291,5 +292,127 @@ namespace KooliProjekt.Application.UnitTests.Features.ProjectTasks
         }
 
         #endregion
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("01234567890123456789012345678901234567890123456789000")]
+        public async Task SaveTaskValidator_should_fail_when_title_is_invalid(string title)
+        {
+            // Arrange
+            var command = new SaveProjectTaskCommand { Title = title };
+            var validator = new SaveProjectTaskCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveProjectTaskCommand.Title), error.PropertyName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("01234567890123456789012345678901234567890123890123456789012345678901238901234567890123456789012345678900123456789")]
+        public async Task SaveTaskValidator_should_fail_when_description_is_invalid(string description)
+        {
+            // Arrange
+            var command = new SaveProjectTaskCommand
+            {
+                Title = "Valid title",
+                Description = description,
+                ProjectId = 1,
+                ResponsibleUserId = 1
+            };
+            var validator = new SaveProjectTaskCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveProjectTaskCommand.Description), error.PropertyName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task SaveTaskValidator_should_fail_when_project_id_is_invalid(int projectId)
+        {
+            // Arrange
+            var command = new SaveProjectTaskCommand
+            {
+                Title = "Valid title",
+                Description = "Valid description",
+                ProjectId = projectId,
+                ResponsibleUserId = 1
+            };
+            var validator = new SaveProjectTaskCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveProjectTaskCommand.ProjectId), error.PropertyName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-5)]
+        public async Task SaveTaskValidator_should_fail_when_responsible_user_id_is_invalid(int userId)
+        {
+            // Arrange
+            var command = new SaveProjectTaskCommand
+            {
+                Title = "Valid title",
+                Description = "Valid description",
+                ProjectId = 1,
+                ResponsibleUserId = userId
+            };
+
+            var validator = new SaveProjectTaskCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveProjectTaskCommand.ResponsibleUserId), error.PropertyName);
+        }
+
+        [Fact]
+        public async Task SaveTaskValidator_should_succeed_when_command_is_valid()
+        {
+            // Arrange
+            var command = new SaveProjectTaskCommand
+            {
+                Title = "Task title",
+                Description = "Task description",
+                ProjectId = 1,
+                ResponsibleUserId = 1
+            };
+            var validator = new SaveProjectTaskCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
     }
 }

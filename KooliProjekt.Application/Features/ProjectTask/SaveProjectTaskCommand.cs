@@ -2,9 +2,11 @@
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace KooliProjekt.Application.Features.ProjectTasks
 {
+    [ExcludeFromCodeCoverage]
     public class SaveProjectTaskCommand : IRequest<OperationResult>
     {
         public int Id { get; set; }

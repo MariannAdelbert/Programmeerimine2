@@ -1,5 +1,8 @@
-﻿namespace KooliProjekt.Application.Infrastructure.Results
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace KooliProjekt.Application.Infrastructure.Results
 {
+    [ExcludeFromCodeCoverage]
     public class OperationResult<T> : OperationResult
     {
         public T Value { get; set; }

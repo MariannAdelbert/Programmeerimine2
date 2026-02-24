@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace KooliProjekt.Application.Infrastructure.Paging
 {
+    [ExcludeFromCodeCoverage]
     public class PagedResult<T> : PagedResultBase
     {
         public IList<T> Results { get; set; }

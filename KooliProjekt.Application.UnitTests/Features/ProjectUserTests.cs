@@ -382,5 +382,105 @@ namespace KooliProjekt.Application.UnitTests.Features.ProjectUsers
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        // -------------------
+        // SAVE PROJECT USER VALIDATOR TESTS
+        // -------------------
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task SaveUserValidator_should_fail_when_project_id_is_invalid(int projectId)
+        {
+            // Arrange
+            var command = new SaveProjectUserCommand
+            {
+                ProjectId = projectId,
+                UserId = 1,
+                RoleInProject = "Valid role"
+            };
+            var validator = new SaveProjectUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveProjectUserCommand.ProjectId), error.PropertyName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-5)]
+        public async Task SaveUserValidator_should_fail_when_user_id_is_invalid(int userId)
+        {
+            // Arrange
+            var command = new SaveProjectUserCommand
+            {
+                ProjectId = 1,
+                UserId = userId,
+                RoleInProject = "Valid role"
+            };
+            var validator = new SaveProjectUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveProjectUserCommand.UserId), error.PropertyName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("01234567890123456789012345678901234567890123456789001")] // >50 tähemärki
+        public async Task SaveUserValidator_should_fail_when_role_is_invalid(string role)
+        {
+            // Arrange
+            var command = new SaveProjectUserCommand
+            {
+                ProjectId = 1,
+                UserId = 1,
+                RoleInProject = role
+            };
+            var validator = new SaveProjectUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.IsValid);
+
+            var error = result.Errors.First();
+            Assert.Equal(nameof(SaveProjectUserCommand.RoleInProject), error.PropertyName);
+        }
+
+        [Fact]
+        public async Task SaveUserValidator_should_succeed_when_command_is_valid()
+        {
+            // Arrange
+            var command = new SaveProjectUserCommand
+            {
+                ProjectId = 1,
+                UserId = 1,
+                RoleInProject = "Developer"
+            };
+            var validator = new SaveProjectUserCommandValidator();
+
+            // Act
+            var result = await validator.ValidateAsync(command);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.IsValid);
+        }
     }
 }
