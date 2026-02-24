@@ -57,13 +57,11 @@ namespace KooliProjekt.Application.UnitTests.Features.ProjectUsers
             Assert.False(result.HasErrors);
             Assert.NotNull(result.Value);
 
-            // Cast anonüümne objekt IDictionary-iks
-            var dict = result.Value as IDictionary<string, object>;
-            Assert.NotNull(dict);
-            Assert.Equal(projectUser.Id, Convert.ToInt32(dict["Id"]));
-            Assert.Equal(project.Id, Convert.ToInt32(dict["ProjectId"]));
-            Assert.Equal(user.Id, Convert.ToInt32(dict["UserId"]));
-            Assert.Equal("Developer", dict["RoleInProject"].ToString());
+            Assert.Equal(projectUser.Id, result.Value.Id);
+            Assert.Equal(project.Id, result.Value.ProjectId);
+            Assert.Equal(user.Id, result.Value.UserId);
+            Assert.Equal("Developer", result.Value.RoleInProject);
+            Assert.True(projectUser.Id > 0);
         }
 
         [Theory]

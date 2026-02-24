@@ -20,7 +20,8 @@ namespace KooliProjekt.Application.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ProjectUser>()
-                .HasKey(pu => new { pu.ProjectId, pu.UserId });
+        .HasIndex(pu => new { pu.ProjectId, pu.UserId })
+        .IsUnique();
 
             modelBuilder.Entity<Project>()
                 .Property(p => p.Budget)

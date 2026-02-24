@@ -1,8 +1,9 @@
-﻿using System;
+﻿using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Features.WorkLogs;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Features.WorkLogs;
-using KooliProjekt.Application.Data;
 using Xunit;
 
 namespace KooliProjekt.Application.UnitTests.Features.WorkLogs
@@ -83,6 +84,163 @@ namespace KooliProjekt.Application.UnitTests.Features.WorkLogs
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
             Assert.Null(result.Value);
+        }
+
+        // ===== Save Tests =====
+        [Fact]
+        public async Task Save_should_add_new_worklog()
+        {
+            var user = new User
+            {
+                UserName = "user2",
+                Name = "User Two",
+                Email = "user2@test.com",
+                Password = "Password123",
+                Role = "Developer"
+            };
+            var task = new ProjectTask
+            {
+                Title = "Task 2",
+                Description = "Test Task 2"
+            };
+            await DbContext.Users.AddAsync(user);
+            await DbContext.ProjectTasks.AddAsync(task);
+            await DbContext.SaveChangesAsync();
+
+            var command = new SaveWorkLogCommand
+            {
+                TaskId = task.Id,
+                UserId = user.Id,
+                Date = DateTime.Today,
+                HoursSpent = 4,
+                Description = "Worked full day"
+            };
+            var handler = new SaveWorkLogCommandHandler(DbContext);
+
+            var result = await handler.Handle(command, CancellationToken.None);
+            var saved = await DbContext.WorkLogs.FirstOrDefaultAsync();
+
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(saved);
+            Assert.Equal(4, saved.HoursSpent);
+        }
+
+        [Fact]
+        public async Task Save_should_update_existing_worklog()
+        {
+            var user = new User
+            {
+                UserName = "user3",
+                Name = "User Three",
+                Email = "user3@test.com",
+                Password = "Password123",
+                Role = "Developer"
+            };
+            var task = new ProjectTask
+            {
+                Title = "Task 3",
+                Description = "Test Task 3"
+            };
+            await DbContext.Users.AddAsync(user);
+            await DbContext.ProjectTasks.AddAsync(task);
+            await DbContext.SaveChangesAsync();
+
+            var existing = new WorkLog
+            {
+                TaskId = task.Id,
+                UserId = user.Id,
+                Date = DateTime.Today,
+                HoursSpent = 1.5m,
+                Description = "Initial work"
+            };
+            await DbContext.WorkLogs.AddAsync(existing);
+            await DbContext.SaveChangesAsync();
+
+            var command = new SaveWorkLogCommand
+            {
+                Id = existing.Id,
+                TaskId = task.Id,
+                UserId = user.Id,
+                Date = DateTime.Today,
+                HoursSpent = 3.0m,
+                Description = "Updated work"
+            };
+            var handler = new SaveWorkLogCommandHandler(DbContext);
+
+            var result = await handler.Handle(command, CancellationToken.None);
+            var updated = await DbContext.WorkLogs.FindAsync(existing.Id);
+
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.Equal(3.0m, updated.HoursSpent);
+            Assert.Equal("Updated work", updated.Description);
+        }
+
+        [Fact]
+        public void Delete_should_throw_when_dbcontext_is_null()
+        {
+            Assert.Throws<System.ArgumentNullException>(() =>
+            {
+                new DeleteWorkLogCommandHandler(null);
+            });
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_existing_worklog()
+        {
+            // Arrange
+            var workLog = new WorkLog
+            {
+                HoursSpent = 5,
+                Description = "Test worklog",
+            };
+            await DbContext.WorkLogs.AddAsync(workLog);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeleteWorkLogCommand { Id = workLog.Id };
+            var handler = new DeleteWorkLogCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+            var saved = await DbContext.WorkLogs.FirstOrDefaultAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.Null(saved); // WorkLog kustutatud
+        }
+
+        [Fact]
+        public async Task Delete_should_do_nothing_for_nonexistent_worklog()
+        {
+            // Arrange
+            var command = new DeleteWorkLogCommand { Id = 9999 }; // olemasolemata Id
+            var handler = new DeleteWorkLogCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Delete_should_ignore_zero_or_negative_id(int id)
+        {
+            // Arrange
+            var command = new DeleteWorkLogCommand { Id = id };
+            var handler = new DeleteWorkLogCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
         }
     }
 }

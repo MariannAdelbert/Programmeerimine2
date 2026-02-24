@@ -2,7 +2,7 @@
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,16 +14,25 @@ namespace KooliProjekt.Application.Features.TaskFiles
 
         public DeleteTaskFileCommandHandler(ApplicationDbContext dbContext)
         {
-            _dbContext = dbContext;
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public async Task<OperationResult> Handle(DeleteTaskFileCommand request, CancellationToken cancellationToken)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
             var result = new OperationResult();
 
-            await _dbContext.TaskFiles
-                .Where(tf => tf.Id == request.Id)
-                .ExecuteDeleteAsync(cancellationToken);
+            // Lae objekt InMemory-st
+            var entity = await _dbContext.TaskFiles
+                .FirstOrDefaultAsync(tf => tf.Id == request.Id, cancellationToken);
+
+            if (entity != null)
+            {
+                _dbContext.TaskFiles.Remove(entity);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+            }
 
             return result;
         }
