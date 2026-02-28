@@ -41,5 +41,13 @@ namespace KooliProjekt.WebAPI.Controllers
             var response = await _mediator.Send(command);
             return Result(response);
         }
+
+        [HttpPost]
+        [Route("Save")]
+        public async Task<IActionResult> Save(SaveWorkLogCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Result(response);
+        }
     }
 }

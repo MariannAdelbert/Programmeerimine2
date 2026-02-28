@@ -1,11 +1,12 @@
-﻿using System;
-using System.Net;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+﻿using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Features.ProjectTasks;
 using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using KooliProjekt.IntegrationTests.Helpers;
+using System;
+using System.Net;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace KooliProjekt.IntegrationTests
@@ -121,6 +122,83 @@ namespace KooliProjekt.IntegrationTests
             // Assert
             Assert.NotNull(response);
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Save_should_create_new_task()
+        {
+            var project = new Project { Name = "Project for Save Test" };
+            await DbContext.AddAsync(project);
+
+            var user = new User { Email = "saveuser@example.com", Password = "Test123!" };
+            await DbContext.AddAsync(user);
+            await DbContext.SaveChangesAsync();
+
+            var command = new SaveProjectTaskCommand
+            {
+                ProjectId = project.Id,
+                Title = "New Task",
+                StartDate = DateTime.UtcNow,
+                EstimatedHours = 5,
+                Description = "Integration test task",
+                IsCompleted = false,
+                FixedPrice = 100,
+                ResponsibleUserId = user.Id
+            };
+
+            var url = "/api/ProjectTasks/Save";
+            var response = await Client.PostAsJsonAsync(url, command);
+            var result = await response.Content.ReadFromJsonAsync<OperationResult>();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.False(result.HasErrors);
+
+            // Kontroll API kaudu
+            var listUrl = $"/api/ProjectTasks/List?projectId={project.Id}&page=1&pageSize=10";
+            var listResponse = await Client.GetFromJsonAsync<OperationResult<PagedResult<ProjectTask>>>(listUrl);
+            Assert.Contains(listResponse.Value.Results, t => t.Title == "New Task");
+        }
+
+        [Fact]
+        public async Task Delete_should_remove_existing_task()
+        {
+            var project = new Project { Name = "Project for Delete Test" };
+            await DbContext.AddAsync(project);
+
+            var user = new User { Email = "deleteuser@example.com", Password = "Test123!" };
+            await DbContext.AddAsync(user);
+            await DbContext.SaveChangesAsync();
+
+            var task = new ProjectTask
+            {
+                Title = "Task to delete",
+                ProjectId = project.Id,
+                StartDate = DateTime.UtcNow,
+                EstimatedHours = 4,
+                Description = "Will be deleted",
+                IsCompleted = false,
+                FixedPrice = 75,
+                ResponsibleUserId = user.Id
+            };
+            await DbContext.AddAsync(task);
+            await DbContext.SaveChangesAsync();
+
+            var url = $"/api/ProjectTasks/Delete?id={task.Id}";
+            var response = await Client.DeleteAsync(url);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Kontroll API kaudu
+            var getUrl = $"/api/ProjectTasks/Get/{task.Id}";
+            var getResponse = await Client.GetAsync(getUrl);
+            Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task Delete_should_handle_missing_task()
+        {
+            var url = "/api/ProjectTasks/Delete?id=9999";
+            var response = await Client.DeleteAsync(url);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
 }

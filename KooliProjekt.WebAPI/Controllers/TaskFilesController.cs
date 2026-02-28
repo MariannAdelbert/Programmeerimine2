@@ -33,11 +33,22 @@ namespace KooliProjekt.WebAPI.Controllers
             return Result(response);
         }
 
-        [HttpDelete("Delete")]
+        // POST: api/TaskFiles/Save
+        [HttpPost]
+        [Route("Save")]
+        public async Task<IActionResult> Save(SaveTaskFileCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return Result(result);
+        }
+
+        // DELETE: api/TaskFiles/Delete
+        [HttpDelete]
+        [Route("Delete")]
         public async Task<IActionResult> Delete(DeleteTaskFileCommand command)
         {
-            var response = await _mediator.Send(command);
-            return Result(response);
+            var result = await _mediator.Send(command);
+            return Result(result);
         }
     }
 }

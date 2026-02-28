@@ -10,7 +10,7 @@ BuildReports/
 *.xml
 
 # VS Code ja Visual Studio seadistused
-.vs
+.vs/
 .vscode/
 *.suo
 *.user

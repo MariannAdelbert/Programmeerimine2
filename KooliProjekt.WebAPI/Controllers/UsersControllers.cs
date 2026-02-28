@@ -1,4 +1,5 @@
-﻿using KooliProjekt.Application.Features.Users;
+﻿using KooliProjekt.Application.Features.User;
+using KooliProjekt.Application.Features.Users;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -34,12 +35,20 @@ namespace KooliProjekt.WebAPI.Controllers
             return Result(response);
         }
 
-        [HttpDelete]
-        [Route("Delete")]
-        public async Task<IActionResult> Delete(DeleteUserCommand command)
+        [HttpDelete("Delete")]
+        public async Task<IActionResult> Delete([FromQuery] int id)
         {
+            var command = new DeleteUserCommand { Id = id };
             var response = await _mediator.Send(command);
             return Result(response);
+        }
+
+        [HttpPost]
+        [Route("Save")]
+        public async Task<IActionResult> Save([FromBody] SaveUserCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return Result(result);
         }
     }
 }

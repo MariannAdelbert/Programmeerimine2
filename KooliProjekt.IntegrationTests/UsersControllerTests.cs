@@ -1,12 +1,16 @@
-﻿using System;
-using System.Net;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+﻿using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Dto;
+using KooliProjekt.Application.Features.User;
+using KooliProjekt.Application.Features.Users;
 using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using KooliProjekt.IntegrationTests.Helpers;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace KooliProjekt.IntegrationTests
@@ -86,6 +90,96 @@ namespace KooliProjekt.IntegrationTests
 
             // Assert
             Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Save_should_add_new_user()
+        {
+            // Arrange
+            var url = "/api/Users/Save";
+            var command = new SaveUserCommand
+            {
+                UserName = "testuser1",
+                Name = "Test User",
+                Email = "testuser1@example.com",
+                Password = "Test123!",
+                Role = "Developer"
+            };
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = JsonContent.Create(command)
+            };
+
+            // Act
+            var response = await Client.SendAsync(request);
+            var result = await response.Content.ReadFromJsonAsync<OperationResult<UserDto>>();
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            Assert.NotNull(result);
+            Assert.NotNull(result.Value);
+            Assert.Equal("testuser1", result.Value.UserName);
+
+            var dbUser = await DbContext.Users.FindAsync(result.Value.Id);
+            Assert.NotNull(dbUser);
+            Assert.Equal("testuser1@example.com", dbUser.Email);
+        }
+
+        [Fact]
+        public async Task Delete_should_remove_existing_user()
+        {
+            // Arrange
+            var user = new User
+            {
+                UserName = "deleteuser",
+                Name = "Delete Me",
+                Email = "deleteuser@example.com",
+                Password = "Test123!",
+                Role = "Tester"
+            };
+            await DbContext.AddAsync(user);
+            await DbContext.SaveChangesAsync();
+
+            var url = $"/api/Users/Delete?id={user.Id}";
+
+            // Act
+            var response = await Client.DeleteAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Uuesti DbContext’ist, AsNoTracking et saada puhas query
+            var deletedUser = await DbContext.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+            Assert.Null(deletedUser); // ✅ Nüüd töötab
+        }
+
+        [Fact]
+        public async Task Save_should_not_update_missing_user()
+        {
+            // Arrange
+            var url = "/api/Users/Save";
+            var command = new SaveUserCommand
+            {
+                Id = 9999,
+                UserName = "ghostuser",
+                Name = "Ghost",
+                Email = "ghost@example.com",
+                Password = "Ghost123!",
+                Role = "Ghost"
+            };
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = JsonContent.Create(command)
+            };
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }

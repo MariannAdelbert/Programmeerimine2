@@ -1,5 +1,6 @@
-﻿using KooliProjekt.Application.Features.ProjectUsers;
-using KooliProjekt.Application.Dto;
+﻿using KooliProjekt.Application.Dto;
+using KooliProjekt.Application.Features.ProjectUsers;
+using KooliProjekt.Application.Features.TaskFiles;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -30,14 +31,31 @@ namespace KooliProjekt.WebAPI.Controllers
         // GET api/ProjectUsers/List?page=1&pageSize=10
         [HttpGet]
         [Route("List")]
-        public async Task<IActionResult> List([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> List([FromQuery] int projectId)
         {
-            var query = new ListProjectUsersQuery
+            var query = new ListProjectUsersQuery { ProjectId = projectId };
+            var response = await _mediator.Send(query); // response: OperationResult<List<ProjectUserDto>>
+            return Result(response);
+        }
+
+        [HttpDelete]
+        [Route("Delete")]
+        public async Task<IActionResult> Delete([FromQuery] int projectId, [FromQuery] int userId)
+        {
+            var command = new DeleteProjectUserCommand
             {
-                Page = page,
-                PageSize = pageSize
+                ProjectId = projectId,
+                UserId = userId
             };
-            var response = await _mediator.Send(query); // response.Value on PagedResult<ProjectUserDto>
+            var response = await _mediator.Send(command);
+            return Result(response);
+        }
+
+        [HttpPost]
+        [Route("Save")]
+        public async Task<IActionResult> Save(SaveProjectUserCommand command)
+        {
+            var response = await _mediator.Send(command);
             return Result(response);
         }
     }
