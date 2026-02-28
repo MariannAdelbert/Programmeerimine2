@@ -1,31 +1,32 @@
-﻿using KooliProjekt.Application.Data;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Dto;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Features.ProjectUsers
 {
     public class GetProjectUserQueryHandler
-    : IRequestHandler<GetProjectUserQuery, OperationResult<ProjectUserDto>>
+        : IRequestHandler<GetProjectUserQuery, OperationResult<ProjectUserDto>>
     {
         private readonly ApplicationDbContext _dbContext;
 
         public GetProjectUserQueryHandler(ApplicationDbContext dbContext)
         {
-            _dbContext = dbContext ?? throw new System.ArgumentNullException(nameof(dbContext));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         public async Task<OperationResult<ProjectUserDto>> Handle(
-        GetProjectUserQuery request,
-        CancellationToken cancellationToken)
+    GetProjectUserQuery request,
+    CancellationToken cancellationToken)
         {
             var result = new OperationResult<ProjectUserDto>();
 
+            // Null-turvaline: tagastame lihtsalt tühja OperationResult
             if (request == null)
                 return result;
 

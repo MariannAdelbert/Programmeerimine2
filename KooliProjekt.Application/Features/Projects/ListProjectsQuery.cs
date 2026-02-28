@@ -16,5 +16,8 @@ namespace KooliProjekt.Application.Features.Projects
     {
         public int Page { get; set; }
         public int PageSize { get; set; }
+
+        public string Title { get; set; }
+        public bool? IsCompleted { get; set; }
     }
 }

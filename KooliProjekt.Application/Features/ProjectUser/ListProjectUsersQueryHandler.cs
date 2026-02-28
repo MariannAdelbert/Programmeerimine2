@@ -1,16 +1,18 @@
-﻿using KooliProjekt.Application.Data;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Dto;
 using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace KooliProjekt.Application.Features.ProjectUsers
 {
-    public class ListProjectUsersQueryHandler : IRequestHandler<ListProjectUsersQuery, OperationResult<PagedResult<ProjectUser>>>
+    public class ListProjectUsersQueryHandler
+        : IRequestHandler<ListProjectUsersQuery, OperationResult<PagedResult<ProjectUserDto>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -19,26 +21,49 @@ namespace KooliProjekt.Application.Features.ProjectUsers
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public async Task<OperationResult<PagedResult<ProjectUser>>> Handle(ListProjectUsersQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<ProjectUserDto>>> Handle(
+            ListProjectUsersQuery request,
+            CancellationToken cancellationToken)
         {
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request.Page <= 0 || request.PageSize <= 0) return new OperationResult<PagedResult<ProjectUserDto>>();
 
-            var result = new OperationResult<PagedResult<ProjectUser>>();
+            var query = _dbContext.ProjectUsers.AsNoTracking().AsQueryable();
 
-            if (request.Page <= 0 || request.PageSize <= 0)
+            // Võid lisada filtreid, nt ProjectId või RoleInProject
+            if (request.ProjectId > 0)
             {
-                result.Value = null;
-                return result;
+                query = query.Where(pu => pu.ProjectId == request.ProjectId);
             }
 
-            var query = _dbContext.ProjectUsers
-                .Include(pu => pu.User)
-                .Include(pu => pu.Project)
-                .OrderBy(pu => pu.RoleInProject);
+            var totalCount = await query.CountAsync(cancellationToken);
 
-            var pagedResult = await query.GetPagedAsync(request.Page, request.PageSize);
-            result.Value = pagedResult;
+            var results = await query
+                .OrderBy(pu => pu.Id)
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(pu => new ProjectUserDto
+                {
+                    Id = pu.Id,
+                    ProjectId = pu.ProjectId,
+                    UserId = pu.UserId,
+                    RoleInProject = pu.RoleInProject
+                })
+                .ToListAsync(cancellationToken);
+
+            var pagedResult = new PagedResult<ProjectUserDto>
+            {
+                Results = results,
+                CurrentPage = request.Page,
+                PageSize = request.PageSize,
+                TotalCount = totalCount
+            };
+
+            var result = new OperationResult<PagedResult<ProjectUserDto>>()
+            {
+                Value = pagedResult
+            };
+
             return result;
         }
     }

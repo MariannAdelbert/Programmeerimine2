@@ -10,5 +10,6 @@ namespace KooliProjekt.Application.Dto
     [ExcludeFromCodeCoverage]
     public class ProjectDetailsDto
     {
+        public int Id { get; set; }
     }
 }

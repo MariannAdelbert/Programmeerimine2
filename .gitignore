@@ -7,8 +7,10 @@ BuildReports/
 *.coverage
 *.cobertura.xml
 *.html
+*.xml
 
 # VS Code ja Visual Studio seadistused
+.vs
 .vscode/
 *.suo
 *.user

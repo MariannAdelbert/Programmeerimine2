@@ -1,13 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11304.174 d18.0
+VisualStudioVersion = 18.1.11304.174
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KooliProjekt.Application", "KooliProjekt.Application\KooliProjekt.Application.csproj", "{AE74289E-DE79-F788-C2DC-BADD9C633513}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KooliProjekt.WebAPI", "KooliProjekt.WebAPI\KooliProjekt.WebAPI.csproj", "{5A2101DC-D650-6EBB-6EBB-3FE62A3E9647}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KooliProjekt.UnitTests", "KooliProjekt.Application.UnitTests\KooliProjekt.UnitTests.csproj", "{8F78C8BA-34CF-4C13-3FF5-E7CD2C67F95A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BBCF868E-88FD-4734-81A4-26F5F55A9DE1}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KooliProjekt.WindowsForms", "KooliProjekt.WindowsForms\KooliProjekt.WindowsForms.csproj", "{3400E1AF-5E74-46B7-B637-487533C4C8C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KooliProjekt.IntegrationTests", "KooliProjekt.IntegrationTests\KooliProjekt.IntegrationTests.csproj", "{3A7D9D29-425C-86E8-EECE-B666CE7CD094}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +36,14 @@ Global
 		{8F78C8BA-34CF-4C13-3FF5-E7CD2C67F95A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F78C8BA-34CF-4C13-3FF5-E7CD2C67F95A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F78C8BA-34CF-4C13-3FF5-E7CD2C67F95A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3400E1AF-5E74-46B7-B637-487533C4C8C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3400E1AF-5E74-46B7-B637-487533C4C8C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3400E1AF-5E74-46B7-B637-487533C4C8C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3400E1AF-5E74-46B7-B637-487533C4C8C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A7D9D29-425C-86E8-EECE-B666CE7CD094}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A7D9D29-425C-86E8-EECE-B666CE7CD094}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A7D9D29-425C-86E8-EECE-B666CE7CD094}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A7D9D29-425C-86E8-EECE-B666CE7CD094}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

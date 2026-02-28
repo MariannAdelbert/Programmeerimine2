@@ -26,8 +26,33 @@ namespace KooliProjekt.Application.Features.Projects
 
             var result = new OperationResult<PagedResult<Project>>();
 
+            var query = _dbContext.Projects.AsQueryable();
+
+            if (!string.IsNullOrEmpty(request.Title))
+            {
+                query = query.Where(list => list.Name.Contains(request.Title));
+            }
+
+            if (request.IsCompleted.HasValue)
+            {
+                if (request.IsCompleted.Value)
+                {
+                    query = query.Where(list => list.ProjectTasks.All(item => item.IsCompleted));
+                }
+                else
+                {
+                    query = query.Where(list => list.ProjectTasks.Any(item => !item.IsCompleted));
+                }
+            }
+
+            result.Value = await query
+                .OrderBy(list => list.Name)
+                .GetPagedAsync(request.Page, request.PageSize);
+
+            return result;
+
             // Kui page või pageSize on <= 0, tagastame null Value
-            if (request.Page <= 0 || request.PageSize <= 0)
+            /*if (request.Page <= 0 || request.PageSize <= 0)
             {
                 result.Value = null;
                 return result;
@@ -40,7 +65,7 @@ namespace KooliProjekt.Application.Features.Projects
             var pagedResult = await query.GetPagedAsync(request.Page, request.PageSize);
 
             result.Value = pagedResult;
-            return result;
+            return result;*/
         }
     }
 }
